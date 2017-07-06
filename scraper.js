@@ -1,6 +1,5 @@
 (function() {
     const cheerio = require('cheerio'),
-        request = require('request'),
         fs = require('fs'),
         rp = require('request-promise'),
         csv = require("fast-csv");
@@ -20,7 +19,7 @@
         writableStream = fs.createWriteStream("./data/" + today + ".csv");
 
     csvStream.pipe(writableStream);
-    // Write the needed headers in order 
+    // Write the needed headers
     csvStream.write(
         {
             a: "Title",
@@ -51,9 +50,9 @@
             $('.products li a').each(function() {
                 shirtURLS.push($(this).attr('href'));
             });
-            for (let i = 0; i < shirtURLS.length; i++) {
+            shirtURLS.forEach((shirtURL) => {
                 const shirt = {
-                    uri: 'http://www.shirts4mike.com/' + shirtURLS[i],
+                    uri: 'http://www.shirts4mike.com/' + shirtURL,
                     transform: function(body) {
                         return cheerio.load(body);
                     }
@@ -64,7 +63,7 @@
                         row.a = $('img').attr('alt');
                         row.b = $('.price').text();
                         row.c = 'http://www.shirts4mike.com/' + $('img').attr('src');
-                        row.d = 'http://www.shirts4mike.com/' + shirtURLS[i];
+                        row.d = 'http://www.shirts4mike.com/' + shirtURL;
                         row.e = new Date().toString();
                         writeCSVLine(row);
                     })
@@ -72,7 +71,7 @@
                         console.error('Error with individual shirt page: ' + err);
                         logError(err);
                 });
-            }
+            });
         })
         .catch(function (err) {
             console.error('There was an error, please try again later: ' + err);
